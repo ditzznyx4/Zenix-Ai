@@ -30,9 +30,9 @@ const WORK = '/tmp/zenix-work';
      ZENIX_MODEL_LUMEN_4_5, ZENIX_MODEL_SOLIS_4_8, ZENIX_MODEL_SOLIS_5, ZENIX_MODEL_FLUX_5_5
    ============================================================ */
 const MODEL_MAP = {
-  'lumen-4.5': 'nvidia/nemotron-3-nano-30b-a3b:free',        // cepat, ringan
-  'solis-4.8': 'openai/gpt-oss-120b:free',                   // cepat, seimbang
-  'solis-5':   'deepseek/deepseek-v4-flash:free',            // fleksibel, konteks 1M
+  'lumen-4.5': 'nvidia/nemotron-3.5-lightning:free',     // paling cepat, konteks 1M
+  'solis-4.8': 'google/gemma-4-26b-a4b-it:free',         // cepat & seimbang, konteks 262K
+  'solis-5':   'qwen/qwen3.8-27b:free',            // fleksibel, konteks 1M
   'flux-5.5':  'nvidia/nemotron-3-ultra-550b-a55b:free'      // paling besar, konteks 1M
 };
 
