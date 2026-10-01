@@ -1,2 +1,2 @@
-# zenix-Ai
+# Zenix-Ai
 Zenix Ai with Convenience &amp; Flexibility 
