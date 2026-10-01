@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zenix Ai — Login</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --surface: #ffffff;
+    --surface-soft: #f4f4f6;
+    --border-soft: #e2e2e6;
+    --text-dark: #1c1c1f;
+    --text-muted: #78787f;
+    --gray-400: #a9a9b0;
+    --orange: #ff8a1f;
+    --orange-dark: #e56f0a;
+    --orange-light: #ffb066;
+    --error: #e5484d;
+    --box-dark: #37373d;
+    --box-dark-border: rgba(255,255,255,.07);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { overflow-x: hidden; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: linear-gradient(155deg, #29292c 0%, #1a1a1c 55%, #202023 100%);
+    min-height: 100vh;
+    color: var(--text-dark);
+    animation: fadeIn .5s ease;
+  }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  button { font-family: inherit; }
+
+  /* Ambient glow — single accent, kept subtle */
+  .glow {
+    position: fixed;
+    width: 480px; height: 480px;
+    top: -140px; right: -120px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,138,31,0.24), transparent 70%);
+    filter: blur(70px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Page transition wrapper */
+  .pages-wrapper { position: relative; width: 100%; height: 100vh; overflow: hidden; }
+  .page {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 2rem 1.5rem; overflow-y: auto;
+    transition: transform .65s cubic-bezier(.65,0,.35,1);
+  }
+  .page.pos-center { transform: translateX(0); z-index: 2; }
+  .page.pos-right  { transform: translateX(100%); z-index: 1; }
+  .page.pos-left   { transform: translateX(-100%); z-index: 1; }
+
+  /* Brand + welcome */
+  .brand-header {
+    position: relative; z-index: 1;
+    display: flex; align-items: center; gap: .55rem;
+    color: #fff; font-family: 'Playfair Display', serif; font-weight: 600; font-size: 1.15rem;
+    margin-bottom: 1.75rem;
+  }
+  .brand-logo { display: flex; }
+  .welcome-block {
+    position: relative; z-index: 1; text-align: center;
+    max-width: 420px; margin: 0 auto 2.2rem;
+  }
+  .welcome-block h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.3rem; font-weight: 700; line-height: 1.25; color: #fff;
+    margin-bottom: 1rem;
+  }
+  .welcome-block .tagline {
+    font-family: 'Inter', sans-serif;
+    font-size: .9rem; color: rgba(255,255,255,.55); font-weight: 400; line-height: 1.6;
+  }
+
+  /* Card (Sign In / register page) */
+  .auth-card {
+    position: relative; z-index: 1;
+    background: var(--box-dark);
+    border: 1px solid var(--box-dark-border);
+    border-radius: 24px;
+    padding: 2.25rem 2rem;
+    width: 100%; max-width: 400px;
+    box-shadow: 0 24px 60px rgba(0,0,0,.45);
+  }
+  .card-title {
+    font-family: 'Playfair Display', serif;
+    text-align: center; font-size: 1.4rem; font-weight: 700; color: #fff; margin-bottom: .2rem;
+  }
+  .card-subtitle {
+    text-align: center; font-size: .85rem; font-weight: 600;
+    color: rgba(255,255,255,.5); margin-bottom: 1.6rem;
+  }
+
+  /* Inputs */
+  .input-group { margin-bottom: 1.15rem; text-align: left; }
+  .input-group label {
+    display: flex; align-items: center; gap: .4rem;
+    font-size: .82rem; font-weight: 700; color: rgba(255,255,255,.85); margin-bottom: .45rem;
+  }
+  .input-group label .icon { color: var(--orange); display: flex; }
+  .input-group input {
+    width: 100%; padding: .78rem 1rem; border-radius: 10px;
+    border: 1.5px solid rgba(255,255,255,.14); background: rgba(0,0,0,.22);
+    font-family: inherit; font-size: .9rem; color: #fff;
+    transition: border-color .2s, background .2s, box-shadow .2s;
+  }
+  .input-group input:focus {
+    outline: none; border-color: var(--orange); background: rgba(0,0,0,.15);
+    box-shadow: 0 0 0 4px rgba(255,138,31,.16);
+  }
+  .input-group input.invalid { border-color: var(--error); background: rgba(229,72,77,.14); }
+  .input-group input.invalid:focus { box-shadow: 0 0 0 4px rgba(229,72,77,.16); }
+  .input-group input::placeholder { color: rgba(255,255,255,.32); }
+
+  .password-wrapper { position: relative; }
+  .password-wrapper input { padding-right: 2.7rem; }
+  .toggle-eye {
+    position: absolute; right: .8rem; top: 50%; transform: translateY(-50%);
+    background: none; border: none; cursor: pointer; color: rgba(255,255,255,.5);
+    display: flex; align-items: center; padding: .2rem;
+  }
+  .toggle-eye:hover { color: #fff; }
+
+  .input-warning {
+    display: block; color: var(--error); font-size: .75rem; font-weight: 600;
+    margin-top: .35rem; opacity: 0; max-height: 0; transform: translateY(-4px);
+    transition: opacity .2s, transform .2s;
+  }
+  .input-warning.show { opacity: 1; max-height: 40px; transform: translateY(0); }
+
+  /* Hero form — login page, fields sit directly on the page background */
+  .hero-form { position: relative; z-index: 1; width: 100%; max-width: 400px; }
+  .hero-form .input-group label .icon { color: rgba(255,255,255,.55); }
+  .hero-form .input-group input {
+    border-radius: 9999px;
+    background: rgba(255,255,255,.06);
+    border-color: rgba(255,255,255,.14);
+    padding: .85rem 1.35rem;
+  }
+  .hero-form .input-group input:focus { background: rgba(255,255,255,.09); }
+  .hero-form .input-group input.invalid { background: rgba(229,72,77,.12); }
+  .hero-form .password-wrapper input { padding-right: 3.1rem; }
+  .hero-form .toggle-eye { right: 1.15rem; }
+  .hero-form .btn-primary, .hero-form .btn-secondary { border-radius: 9999px; }
+
+  /* Buttons */
+  .btn {
+    width: 100%; padding: .85rem 1rem; border-radius: 12px; border: none;
+    font-size: .92rem; font-weight: 700; cursor: pointer;
+    transition: transform .15s, box-shadow .15s, background .2s, border-color .2s;
+  }
+  .btn:active { transform: scale(.98); }
+  .btn + .btn { margin-top: .7rem; }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--orange), var(--orange-dark));
+    color: #fff; box-shadow: 0 8px 18px rgba(255,138,31,.32);
+  }
+  .btn-primary:hover { box-shadow: 0 10px 22px rgba(255,138,31,.42); }
+  .btn-secondary { background: #fff; color: var(--text-dark); border: 1.5px solid var(--border-soft); }
+  .btn-secondary:hover { background: var(--surface-soft); border-color: var(--gray-400); }
+  .btn-row { margin-top: 1.7rem; }
+
+  .switch-text { margin-top: 1.4rem; text-align: center; font-size: .83rem; color: rgba(255,255,255,.5); }
+  .switch-text .link { color: var(--orange); font-weight: 700; cursor: pointer; }
+  .switch-text .link:hover { text-decoration: underline; }
+
+  /* Back button (register page) */
+  .back-btn {
+    position: absolute; top: 1.75rem; left: 1.75rem; z-index: 2;
+    display: flex; align-items: center; gap: .4rem;
+    background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.16);
+    color: #fff; padding: .55rem 1rem; border-radius: 10px;
+    font-size: .83rem; font-weight: 700; cursor: pointer; transition: background .2s;
+  }
+  .back-btn:hover { background: rgba(255,255,255,.16); }
+
+  /* Loading overlay */
+  .loading-overlay {
+    position: fixed; inset: 0; background: rgba(10,10,12,.78); backdrop-filter: blur(6px);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.3rem;
+    opacity: 0; visibility: hidden; transition: opacity .3s, visibility .3s; z-index: 300;
+  }
+  .loading-overlay.active { opacity: 1; visibility: visible; }
+  .loading-bar-track { width: 260px; height: 5px; background: rgba(255,255,255,.15); border-radius: 6px; overflow: hidden; }
+  .loading-bar-fill {
+    height: 100%; width: 0%;
+    background: linear-gradient(90deg, var(--orange-dark), var(--orange), var(--orange-light));
+    border-radius: 6px; transition: width 2.4s cubic-bezier(.4,0,.2,1);
+  }
+  .loading-bar-fill.active { width: 100%; }
+  .loading-text { color: #fff; font-size: .88rem; font-weight: 700; }
+  .loading-text .dot { opacity: .2; animation: pulseDot 1.2s infinite ease-in-out; }
+  .loading-text .dot:nth-child(2) { animation-delay: .2s; }
+  .loading-text .dot:nth-child(3) { animation-delay: .4s; }
+  @keyframes pulseDot { 0%, 60%, 100% { opacity: .2; } 30% { opacity: 1; } }
+
+  /* Success modal */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(10,10,12,.78); backdrop-filter: blur(6px);
+    display: flex; align-items: center; justify-content: center; padding: 1.5rem;
+    opacity: 0; visibility: hidden; transition: opacity .3s, visibility .3s; z-index: 300;
+  }
+  .modal-overlay.active { opacity: 1; visibility: visible; }
+  .success-modal {
+    background: #fff; border-radius: 22px; padding: 2.4rem 2rem 2rem;
+    max-width: 410px; width: 100%; max-height: 85vh; overflow-y: auto; text-align: center;
+    transform: scale(.25); opacity: 0;
+    transition: transform .5s cubic-bezier(.34,1.56,.64,1), opacity .4s;
+  }
+  .modal-overlay.active .success-modal { transform: scale(1); opacity: 1; }
+  .success-icon { margin: 0 auto 1.1rem; width: 58px; height: 58px; }
+  .success-modal h2 { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700; margin-bottom: .4rem; }
+  .success-subtitle { font-size: .92rem; font-weight: 700; color: var(--orange-dark); margin-bottom: 1rem; }
+  .success-desc { font-size: .84rem; color: var(--text-muted); line-height: 1.55; margin-bottom: .7rem; }
+
+  .credentials-box {
+    background: var(--surface-soft); border: 1px solid var(--border-soft); border-radius: 14px;
+    padding: .3rem 1.1rem; margin: 1.3rem 0 1.5rem; text-align: left;
+  }
+  .credential-row { display: flex; align-items: center; justify-content: space-between; gap: .6rem; padding: .7rem 0; }
+  .credential-row + .credential-row { border-top: 1px solid var(--border-soft); }
+  .credential-label { font-size: .78rem; font-weight: 700; color: var(--text-muted); min-width: 74px; }
+  .credential-value {
+    flex: 1; font-size: .9rem; font-weight: 700; color: var(--text-dark);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .copy-btn {
+    background: #fff; border: 1px solid var(--border-soft); border-radius: 8px;
+    width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;
+    color: var(--gray-400); cursor: pointer; transition: all .2s; flex-shrink: 0;
+  }
+  .copy-btn:hover { color: var(--orange); border-color: var(--orange); }
+  .copy-btn.copied { color: #fff; background: var(--orange); border-color: var(--orange); }
+
+  /* Toast */
+  .toast {
+    position: fixed; top: 24px; left: 50%; transform: translateX(-50%) translateY(-120px);
+    background: #1c1c1f; color: #fff; padding: .85rem 1.4rem; border-radius: 12px;
+    font-size: .86rem; font-weight: 600; opacity: 0;
+    transition: transform .4s cubic-bezier(.34,1.56,.64,1), opacity .4s;
+    z-index: 400; box-shadow: 0 10px 30px rgba(0,0,0,.3);
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+  .toast.error { background: var(--error); }
+
+  @media (max-width: 480px) {
+    .auth-card { padding: 1.8rem 1.3rem; border-radius: 20px; }
+    .welcome-block h1 { font-size: 1.9rem; }
+    .back-btn { top: 1.25rem; left: 1.25rem; padding: .5rem .85rem; }
+  }
+</style>
+</head>
+<body>
+  <div class="glow"></div>
+
+  <div class="pages-wrapper">
+    <!-- LOGIN PAGE -->
+    <section class="page pos-center" id="loginPage">
+      <div class="brand-header">
+        <span class="brand-logo">
+          <svg width="30" height="30" viewBox="0 0 48 48">
+            <defs><linearGradient id="sparkleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#ffb066"/><stop offset="100%" stop-color="#ff8a1f"/>
+            </linearGradient></defs>
+            <path d="M24 2C24 14 14 24 2 24C14 24 24 34 24 46C24 34 34 24 46 24C34 24 24 14 24 2Z" fill="url(#sparkleGrad)"/>
+          </svg>
+        </span>
+        <span>Zenix Ai</span>
+      </div>
+
+      <div class="welcome-block">
+        <h1>Welcome To<br>Zenix Ai</h1>
+        <p class="tagline">Smart, reliable, and always ready to help — Zenix Ai brings powerful AI assistance to your fingertips, anytime you need it.</p>
+      </div>
+
+      <div class="hero-form">
+        <div class="input-group">
+          <label for="loginUsername"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg></span>Username</label>
+          <input type="text" id="loginUsername" placeholder="Enter username" autocomplete="username">
+          <span class="input-warning" id="loginUsernameWarning"></span>
+        </div>
+
+        <div class="input-group">
+          <label for="loginPassword"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>Password</label>
+          <div class="password-wrapper">
+            <input type="password" id="loginPassword" placeholder="Enter password" autocomplete="current-password">
+            <button type="button" class="toggle-eye" aria-label="Toggle password visibility"></button>
+          </div>
+          <span class="input-warning" id="loginPasswordWarning"></span>
+        </div>
+
+        <div class="btn-row">
+          <button type="button" class="btn btn-primary" id="loginBtn">Login</button>
+          <button type="button" class="btn btn-secondary" id="goToSignupBtn">Sign In</button>
+        </div>
+
+        <p class="switch-text">Don't have an account? <span class="link" id="signupLink">Click Sign in</span> to register an account.</p>
+      </div>
+    </section>
+
+    <!-- SIGN IN / REGISTER PAGE -->
+    <section class="page pos-right" id="signupPage">
+      <button type="button" class="back-btn" id="backBtn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M11 18l-6-6 6-6"/></svg>
+        Back
+      </button>
+
+      <div class="auth-card">
+        <h2 class="card-title">Zenix Ai</h2>
+        <p class="card-subtitle">- Sign In -</p>
+
+        <div class="input-group">
+          <label for="signupUsername"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg></span>Username</label>
+          <input type="text" id="signupUsername" placeholder="Create your username" autocomplete="off">
+          <span class="input-warning" id="signupUsernameWarning"></span>
+        </div>
+
+        <div class="input-group">
+          <label for="signupPassword"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>Password</label>
+          <div class="password-wrapper">
+            <input type="password" id="signupPassword" placeholder="Create your password" autocomplete="new-password">
+            <button type="button" class="toggle-eye" aria-label="Toggle password visibility"></button>
+          </div>
+          <span class="input-warning" id="signupPasswordWarning"></span>
+        </div>
+
+        <div class="input-group">
+          <label for="confirmPassword"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>Confirm Password</label>
+          <div class="password-wrapper">
+            <input type="password" id="confirmPassword" placeholder="Confirm your password" autocomplete="new-password">
+            <button type="button" class="toggle-eye" aria-label="Toggle password visibility"></button>
+          </div>
+          <span class="input-warning" id="confirmPasswordWarning"></span>
+        </div>
+
+        <div class="btn-row">
+          <button type="button" class="btn btn-secondary" id="submitSignupBtn">Sign In</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- LOADING OVERLAY -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-bar-track"><div class="loading-bar-fill" id="loadingBarFill"></div></div>
+    <p class="loading-text">Loading<span class="dot">.</span><span class="dot">.</span><span class="dot">.</span></p>
+  </div>
+
+  <!-- SUCCESS MODAL -->
+  <div class="modal-overlay" id="successModalOverlay">
+    <div class="success-modal">
+      <div class="success-icon">
+        <svg viewBox="0 0 24 24" width="58" height="58">
+          <defs><linearGradient id="checkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#ffb066"/><stop offset="100%" stop-color="#ff8a1f"/>
+          </linearGradient></defs>
+          <circle cx="12" cy="12" r="11" fill="url(#checkGrad)"/>
+          <path d="M7 12.3l3.3 3.3L17 8.7" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <h2>Congratulations</h2>
+      <p class="success-subtitle">Your account has been successfully created</p>
+      <p class="success-desc">Your account has just been registered with Zenix Ai. You can now log in to Zenix Ai using your account.</p>
+      <p class="success-desc">Use the Username and Password below to log in to Zenix Ai.</p>
+
+      <div class="credentials-box">
+        <div class="credential-row">
+          <span class="credential-label">Username:</span>
+          <span class="credential-value" id="resultUsername"></span>
+          <button type="button" class="copy-btn" data-copy-target="resultUsername" aria-label="Copy username">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          </button>
+        </div>
+        <div class="credential-row">
+          <span class="credential-label">Password:</span>
+          <span class="credential-value" id="resultPassword"></span>
+          <button type="button" class="copy-btn" data-copy-target="resultPassword" aria-label="Copy password">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <button type="button" class="btn btn-secondary" id="closeModalBtn">Close</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+(function () {
+  // ---------- Refs ----------
+  var loginPage = document.getElementById('loginPage');
+  var signupPage = document.getElementById('signupPage');
+
+  var loginUsernameInput = document.getElementById('loginUsername');
+  var loginPasswordInput = document.getElementById('loginPassword');
+  var loginUsernameWarning = document.getElementById('loginUsernameWarning');
+  var loginPasswordWarning = document.getElementById('loginPasswordWarning');
+
+  var signupUsernameInput = document.getElementById('signupUsername');
+  var signupPasswordInput = document.getElementById('signupPassword');
+  var confirmPasswordInput = document.getElementById('confirmPassword');
+  var signupUsernameWarning = document.getElementById('signupUsernameWarning');
+  var signupPasswordWarning = document.getElementById('signupPasswordWarning');
+  var confirmPasswordWarning = document.getElementById('confirmPasswordWarning');
+
+  var loginBtn = document.getElementById('loginBtn');
+  var goToSignupBtn = document.getElementById('goToSignupBtn');
+  var signupLink = document.getElementById('signupLink');
+  var backBtn = document.getElementById('backBtn');
+  var submitSignupBtn = document.getElementById('submitSignupBtn');
+
+  var loadingOverlay = document.getElementById('loadingOverlay');
+  var loadingBarFill = document.getElementById('loadingBarFill');
+
+  var successModalOverlay = document.getElementById('successModalOverlay');
+  var resultUsername = document.getElementById('resultUsername');
+  var resultPassword = document.getElementById('resultPassword');
+  var closeModalBtn = document.getElementById('closeModalBtn');
+
+  var toast = document.getElementById('toast');
+  var toastTimer = null;
+
+  var registeredAccount = null;
+
+  // ---------- Backend API ----------
+  function api(url, body) {
+    return fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (d) { return { ok: r.ok, status: r.status, data: d }; }); })
+      .catch(function () { return { ok: false, status: 0, data: { error: 'Tidak bisa terhubung ke server.' } }; });
+  }
+  function accounts() { try { return JSON.parse(localStorage.getItem('zenix_accounts')) || {}; } catch (e) { return {}; } }
+  function getAccount(u) { return accounts()[u.toLowerCase()] || null; }
+  function saveAccount(u, blob) { var a = accounts(); a[u.toLowerCase()] = blob; try { localStorage.setItem('zenix_accounts', JSON.stringify(a)); } catch (e) {} }
+  // Sudah login? langsung ke chat.
+  (function () {
+    var t = localStorage.getItem('zenix_token');
+    if (!t) return;
+    fetch('/api/verify', { headers: { Authorization: 'Bearer ' + t } }).then(function (r) { if (r.ok) window.location.replace('/chat'); }).catch(function () {});
+  })();
+
+  // ---------- Helpers ----------
+  function setWarning(inputEl, warningEl, message) {
+    inputEl.classList.add('invalid');
+    warningEl.textContent = message;
+    warningEl.classList.add('show');
+  }
+  function clearWarning(inputEl, warningEl) {
+    inputEl.classList.remove('invalid');
+    warningEl.textContent = '';
+    warningEl.classList.remove('show');
+  }
+  function showToast(message, isError) {
+    toast.textContent = message;
+    toast.classList.toggle('error', !!isError);
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toast.classList.remove('show'); }, 2800);
+  }
+
+  // ---------- Page transition ----------
+  function transitionTo(hidePage, showPage, showEntersFrom) {
+    showPage.classList.remove('pos-center', 'pos-left', 'pos-right');
+    showPage.classList.add(showEntersFrom === 'right' ? 'pos-right' : 'pos-left');
+    void showPage.offsetWidth; // force reflow so the start position registers
+    requestAnimationFrame(function () {
+      showPage.classList.remove('pos-right', 'pos-left');
+      showPage.classList.add('pos-center');
+      hidePage.classList.remove('pos-center');
+      hidePage.classList.add(showEntersFrom === 'right' ? 'pos-left' : 'pos-right');
+    });
+  }
+
+  goToSignupBtn.addEventListener('click', function () { transitionTo(loginPage, signupPage, 'right'); });
+  signupLink.addEventListener('click', function () { transitionTo(loginPage, signupPage, 'right'); });
+  backBtn.addEventListener('click', function () { transitionTo(signupPage, loginPage, 'left'); });
+
+  // ---------- Password visibility toggles ----------
+  var eyeOpenSVG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>';
+  var eyeClosedSVG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a21.27 21.27 0 0 1 5.06-6.06M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a21.27 21.27 0 0 1-2.16 3.19"/><path d="M1 1l22 22"/></svg>';
+
+  var toggleButtons = document.querySelectorAll('.toggle-eye');
+  for (var i = 0; i < toggleButtons.length; i++) {
+    toggleButtons[i].innerHTML = eyeOpenSVG;
+    toggleButtons[i].addEventListener('click', function () {
+      var wrapper = this.closest('.password-wrapper');
+      var input = wrapper.querySelector('input');
+      if (input.type === 'password') {
+        input.type = 'text';
+        this.innerHTML = eyeClosedSVG;
+      } else {
+        input.type = 'password';
+        this.innerHTML = eyeOpenSVG;
+      }
+    });
+  }
+
+  // ---------- Login validation ----------
+  function validateLoginUsername() {
+    var val = loginUsernameInput.value.trim();
+    if (!val) { setWarning(loginUsernameInput, loginUsernameWarning, 'Please enter your username.'); return false; }
+    clearWarning(loginUsernameInput, loginUsernameWarning);
+    return true;
+  }
+  function validateLoginPassword() {
+    var val = loginPasswordInput.value;
+    if (!val) { setWarning(loginPasswordInput, loginPasswordWarning, 'Please enter your password.'); return false; }
+    clearWarning(loginPasswordInput, loginPasswordWarning);
+    return true;
+  }
+  loginUsernameInput.addEventListener('input', function () { if (loginUsernameInput.classList.contains('invalid')) validateLoginUsername(); });
+  loginPasswordInput.addEventListener('input', function () { if (loginPasswordInput.classList.contains('invalid')) validateLoginPassword(); });
+  loginPasswordInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') handleLogin(); });
+
+  loginBtn.addEventListener('click', handleLogin);
+
+  function handleLogin() {
+    var okU = validateLoginUsername();
+    var okP = validateLoginPassword();
+    if (!okU || !okP) return;
+
+    var u = loginUsernameInput.value.trim();
+    var p = loginPasswordInput.value;
+    loginBtn.disabled = true;
+    api('/api/login', { username: u, password: p, account: getAccount(u) }).then(function (r) {
+      loginBtn.disabled = false;
+      if (!r.ok) {
+        if (r.status === 401 && /password/i.test(r.data.error || '')) setWarning(loginPasswordInput, loginPasswordWarning, r.data.error);
+        else setWarning(loginUsernameInput, loginUsernameWarning, r.data.error || 'Login gagal.');
+        return;
+      }
+      try {
+        localStorage.setItem('zenix_token', r.data.token);
+        localStorage.setItem('zenix_username', r.data.username);
+      } catch (e) {}
+      showToast('Login berhasil. Selamat datang, ' + r.data.username + '!');
+      setTimeout(function () { window.location.href = '/chat'; }, 600);
+    });
+  }
+
+  // ---------- Signup validation ----------
+  function validateSignupUsername() {
+    var val = signupUsernameInput.value.trim();
+    if (!val) { setWarning(signupUsernameInput, signupUsernameWarning, 'Username is required.'); return false; }
+    if (val.length < 4) { setWarning(signupUsernameInput, signupUsernameWarning, 'Username must be at least 4 characters.'); return false; }
+    if (val.length > 12) { setWarning(signupUsernameInput, signupUsernameWarning, 'Username must not exceed 12 characters.'); return false; }
+    clearWarning(signupUsernameInput, signupUsernameWarning);
+    return true;
+  }
+  function validateSignupPassword() {
+    var val = signupPasswordInput.value;
+    if (!val) { setWarning(signupPasswordInput, signupPasswordWarning, 'Password is required.'); return false; }
+    if (val.length < 6) { setWarning(signupPasswordInput, signupPasswordWarning, 'Password must be at least 6 characters.'); return false; }
+    if (val.length > 18) { setWarning(signupPasswordInput, signupPasswordWarning, 'Password must not exceed 18 characters.'); return false; }
+    clearWarning(signupPasswordInput, signupPasswordWarning);
+    return true;
+  }
+  function validateConfirmPassword() {
+    var val = confirmPasswordInput.value;
+    if (!val) { setWarning(confirmPasswordInput, confirmPasswordWarning, 'Please confirm your password.'); return false; }
+    if (val !== signupPasswordInput.value) { setWarning(confirmPasswordInput, confirmPasswordWarning, 'Passwords do not match.'); return false; }
+    clearWarning(confirmPasswordInput, confirmPasswordWarning);
+    return true;
+  }
+
+  signupUsernameInput.addEventListener('input', function () { if (signupUsernameInput.classList.contains('invalid')) validateSignupUsername(); });
+  signupPasswordInput.addEventListener('input', function () {
+    if (signupPasswordInput.classList.contains('invalid')) validateSignupPassword();
+    if (confirmPasswordInput.classList.contains('invalid')) validateConfirmPassword();
+  });
+  confirmPasswordInput.addEventListener('input', function () { if (confirmPasswordInput.classList.contains('invalid')) validateConfirmPassword(); });
+  confirmPasswordInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') handleSignup(); });
+
+  submitSignupBtn.addEventListener('click', handleSignup);
+
+  function handleSignup() {
+    var okU = validateSignupUsername();
+    var okP = validateSignupPassword();
+    var okC = validateConfirmPassword();
+    if (!okU || !okP || !okC) return;
+
+    var su = signupUsernameInput.value.trim();
+    var sp = signupPasswordInput.value;
+    submitSignupBtn.disabled = true;
+    api('/api/register', { username: su, password: sp }).then(function (r) {
+      submitSignupBtn.disabled = false;
+      if (!r.ok) { setWarning(signupUsernameInput, signupUsernameWarning, r.data.error || 'Pendaftaran gagal.'); return; }
+      if (r.data.account) saveAccount(su, r.data.account);
+      registeredAccount = { username: su, password: sp };
+      startLoadingSequence();
+    });
+  }
+
+  // ---------- Loading + success modal ----------
+  function startLoadingSequence() {
+    loadingBarFill.style.transition = 'none';
+    loadingBarFill.classList.remove('active');
+    void loadingBarFill.offsetWidth;
+    loadingBarFill.style.transition = '';
+
+    loadingOverlay.classList.add('active');
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () { loadingBarFill.classList.add('active'); });
+    });
+
+    setTimeout(function () {
+      loadingOverlay.classList.remove('active');
+      showSuccessModal();
+    }, 2500);
+  }
+
+  function showSuccessModal() {
+    resultUsername.textContent = registeredAccount.username;
+    resultPassword.textContent = registeredAccount.password;
+    successModalOverlay.classList.add('active');
+  }
+
+  closeModalBtn.addEventListener('click', function () {
+    successModalOverlay.classList.remove('active');
+    setTimeout(function () {
+      signupUsernameInput.value = '';
+      signupPasswordInput.value = '';
+      confirmPasswordInput.value = '';
+      clearWarning(signupUsernameInput, signupUsernameWarning);
+      clearWarning(signupPasswordInput, signupPasswordWarning);
+      clearWarning(confirmPasswordInput, confirmPasswordWarning);
+      transitionTo(signupPage, loginPage, 'right');
+    }, 350);
+  });
+
+  // ---------- Copy to clipboard ----------
+  function fallbackCopy(text) {
+    var temp = document.createElement('textarea');
+    temp.value = text;
+    temp.style.position = 'fixed';
+    temp.style.opacity = '0';
+    document.body.appendChild(temp);
+    temp.select();
+    try { document.execCommand('copy'); } catch (e) {}
+    document.body.removeChild(temp);
+  }
+
+  var copyButtons = document.querySelectorAll('.copy-btn');
+  for (var j = 0; j < copyButtons.length; j++) {
+    copyButtons[j].addEventListener('click', function () {
+      var targetId = this.getAttribute('data-copy-target');
+      var text = document.getElementById(targetId).textContent;
+      var btn = this;
+      var done = function () {
+        btn.classList.add('copied');
+        setTimeout(function () { btn.classList.remove('copied'); }, 1100);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done).catch(function () { fallbackCopy(text); done(); });
+      } else {
+        fallbackCopy(text);
+        done();
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>
