@@ -48,15 +48,15 @@ const WORK = '/tmp/zenix-work';
 const MODEL_MAP = {
   'lumen-4.5': 'nvidia/nemotron-3.5-lightning:free',     // paling cepat, konteks 1M
   'solis-4.8': 'google/gemma-4-26b-a4b-it:free',         // cepat & seimbang, konteks 262K
-  'solis-5':   'qwen/qwen3.8-27b:free',                  // fleksibel, kualitas tertinggi di daftar free, konteks 262K
+  'solis-5':   'nvidia/nemotron-3-super-120b-a12b:free',  // fleksibel, 120B, konteks 262K (qwen3.8 sudah berbayar)
   'flux-5.5':  'nvidia/nemotron-3-ultra-550b-a55b:free'  // terbesar, konteks 1M
 };
 // Cadangan (tetap FREE) dipakai HANYA kalau model utama kena limit/mati. Env: ZENIX_BACKUP_<NAMA>="a:free,b:free"
 const BACKUP_MAP = {
-  'lumen-4.5': ['google/gemma-4-26b-a4b-it:free', 'openrouter/free'],
-  'solis-4.8': ['nvidia/nemotron-3.5-lightning:free', 'openrouter/free'],
-  'solis-5':   ['nvidia/nemotron-3-ultra-550b-a55b:free', 'openrouter/free'],
-  'flux-5.5':  ['qwen/qwen3.8-27b:free', 'openrouter/free']
+  'lumen-4.5': ['google/gemma-4-26b-a4b-it:free', 'nvidia/nemotron-3-super-120b-a12b:free', 'openrouter/free'],
+  'solis-4.8': ['nvidia/nemotron-3.5-lightning:free', 'google/gemma-4-31b-it:free', 'openrouter/free'],
+  'solis-5':   ['nvidia/nemotron-3-ultra-550b-a55b:free', 'thinkingmachines/inkling:free', 'google/gemma-4-31b-it:free', 'openrouter/free'],
+  'flux-5.5':  ['thinkingmachines/inkling:free', 'nvidia/nemotron-3-super-120b-a12b:free', 'google/gemma-4-31b-it:free', 'openrouter/free']
 };
 
 /* ---------------- MODEL REGISTRY ----------------
@@ -68,6 +68,10 @@ const CTX = {
   'nvidia/nemotron-3.5-lightning:free': 1000000,
   'google/gemma-4-26b-a4b-it:free': 262144,
   'qwen/qwen3.8-27b:free': 262144,
+  'nvidia/nemotron-3-super-120b-a12b:free': 262144,
+  'google/gemma-4-31b-it:free': 262144,
+  'thinkingmachines/inkling:free': 1048576,
+  'thinkingmachines/inkling-small:free': 1048576,
   'nvidia/nemotron-3-ultra-550b-a55b:free': 1000000,
   'openrouter/free': 200000
 };
